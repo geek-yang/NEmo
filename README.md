@@ -16,7 +16,7 @@ Xingjian, S. H. I., Chen, Z., Wang, H., Yeung, D. Y., Wong, W. K., & Woo, W. C. 
 
 ## Structure :file_folder:
 * `nemo` Main components of NEmo
-* `test` Unit testing, functional testing and integration testing as well as some benchmarking work
+* `tests` Unit testing, functional testing and integration testing as well as some benchmarking work
 * `examples` Including jupyter notebooks showing how to use each function in NEmo
 * `models` Examples of some trained BBConvLSTM and ConvLSTM neural networks
 
