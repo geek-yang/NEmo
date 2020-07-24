@@ -18,6 +18,52 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+class EarlyStop:
+    """
+    Early stop module is widely used to avoid over-fitting. The loss is assigned to be
+    the smaller the better.
+    """ 
+    def __init__(self, patience: int, verbose=False, delta=0, path='checkpoint.pt'):
+        """
+        Early stops the training if validation loss doesn't improve after a given patience.
+        param patience: how long to wait after last time validation loss improved.
+        param verbose: if True, prints a message for each validation loss improvement. 
+        param delta: minimum change in the monitored quantity to qualify as an improvement.
+        param path: output path of the checkpoint file.
+        """         
+        self.patience = patience
+        self.verbose = verbose
+        self.counter = 0
+        self.best_score = None
+        self.early_stop = False
+        self.val_loss_min = np.Inf
+        self.delta = delta
+        self.path = path
+        
+    def __call__(self, val_loss, model):
+
+        score = val_loss
+
+        if self.best_score is None:
+            self.best_score = score
+            self.save_checkpoint(val_loss, model)
+        elif score > self.best_score + self.delta:
+            self.counter += 1
+            print(f'EarlyStopping counter: {self.counter} out of {self.patience}')
+            if self.counter >= self.patience:
+                self.early_stop = True
+        else:
+            self.best_score = score
+            self.save_checkpoint(val_loss, model)
+            self.counter = 0
+
+    def save_checkpoint(self, val_loss, model):
+        '''Saves model when validation loss decrease.'''
+        if self.verbose:
+            print(f'Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ...')
+        torch.save(model.state_dict(), self.path)
+        self.val_loss_min = val_loss
+
 def lossPeak(y_pred,y_train,y_max=0.8,y_min=0.3,weight_ex=2):
     """
     Loss function to place high weight on maximum (upper threshold) and minimum (lower threshold) of the training sequence.
