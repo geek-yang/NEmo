@@ -1,10 +1,10 @@
 """
 Copyright Netherlands eScience Center
 Function     : Emotion recognition and forecast with BBConvLSTM
-Author       : Yang Liu & Tianyi Zhang
+Author       : Yang Liu
 Contributor  : Tianyi Zhang (Centrum Wiskunde & Informatica)
 First Built  : 2020.06.19
-Last Update  : 2020.07.22
+Last Update  : 2020.06.29
 Library     : Pytorth, Numpy, os, NEmo, matplotlib
 Description  : This script serves to test the prediction skill of deep neural networks in emotion recognition and forecast. The Bayesian convolutional Long Short Time Memory neural network with Bernoulli approximate variational inference is used to deal with this spatial-temporal sequence problem. We use Pytorch as the deep learning framework.
 
@@ -98,6 +98,7 @@ def train_model(window_size, dim_x, dim_y,
     print ('*******************  configuration before training  *********************')
     # specifications of neural network
     batch_train_size, sequence_len, _, _, input_channels = x_train.shape
+    batch_test_size, series_len, _, _, _ = x_test.shape
     # here we input a sequence and predict the next step only
     learning_rate = 0.01
     num_epochs = 20
@@ -141,6 +142,9 @@ def train_model(window_size, dim_x, dim_y,
     early_stopping = nemo.function.EarlyStop(patience = 5, path=os.path.join('./model/%s/%s/'%(model_type,v_a),'checkpoint.pt'))
     # loop of epoch
     for t in range(num_epochs):
+        ################################################
+        ########          training loop         ########
+        ################################################        
         for i in range(iterations):
             # Clear stored gradient
             model.zero_grad()
@@ -194,12 +198,50 @@ def train_model(window_size, dim_x, dim_y,
 
             # Update parameters
             optimiser.step()
+
+        ################################################
+        ######        early stop check loop       ######
+        ################################################
+        # forecast array
+        pred = np.zeros((batch_test_size, series_len, dim_y, dim_x),dtype=float)
+        # calculate loss for each sample
+        hist_pred = np.zeros(batch_test_size)
+        for n in range(batch_test_size):
+            # Clear stored gradient
+            model.zero_grad()
+            for timestep in range(sequence_len):
+                x_input = np.stack((x_test[n,timestep,:,:,0],
+                                    x_test[n,timestep,:,:,1],
+                                    x_test[n,timestep,:,:,2],
+                                    x_test[n,timestep,:,:,3],
+                                    x_test[n,timestep,:,:,4]))
+                x_var_pred = torch.autograd.Variable(torch.Tensor(x_input).view(-1,input_channels,dim_y,dim_x),
+                                                     requires_grad=False).to(device)
+                # make prediction
+                last_pred, _ = model(x_var_pred, timestep)
+                # GPU data should be transferred to CPU
+                pred[n,timestep,:,:] = last_pred[0,0,:,:].cpu().data.numpy()
+            # compute the error for each sample
+            hist_pred[n] = MSE(y_test[n,:,:,:,0], pred[n,:,:,:])
+
+        # calculate total loss
+        valid_loss = np.mean(hist_pred)
+        
+        # early_stopping needs the validation loss to check if it has decresed, 
+        # and if it has, it will make a checkpoint of the current model
+        early_stopping(valid_loss, model)
+        
+        if early_stopping.early_stop:
+            print("Early stopping")
+            break        
+
+    # load the last checkpoint with the best model
+    model.load_state_dict(torch.load(os.path.join('./model/%s/%s/'%(model_type,v_a),'checkpoint.pt'))) 
             
     # save the model
     # (recommended) save the model parameters only
     torch.save(model.state_dict(), os.path.join('./model/%s/%s/'%(model_type,v_a),
-                                                'emotion_%s_%s.pkl'%(model_type,v_a)))
-    ########### attention !! no early stopping is implemented here!! ################
+                                                'emotion_%s_%s.pkl'%(model_type,v_a))) 
     
     #################################################################################
     ###########                 after training statistics                 ###########
@@ -224,34 +266,8 @@ def train_model(window_size, dim_x, dim_y,
                                'train_log_mse_error_%s_%s.png'%(model_type,v_a)),dpi=150)
     
     #################################################################################
-    ########                           prediction                            ########
+    ########                      prediction loop statistics                 ########
     #################################################################################
-    batch_test_size, series_len, _, _, _ = x_test.shape
-    print('##############################################################')
-    print('###################  start prediction loop ###################')
-    print('##############################################################')
-    # forecast array
-    pred = np.zeros((batch_test_size, series_len, dim_y, dim_x),dtype=float)
-    # calculate loss for each sample
-    hist_pred = np.zeros(batch_test_size)
-    for n in range(batch_test_size):
-        # Clear stored gradient
-        model.zero_grad()
-        for timestep in range(sequence_len):
-            x_input = np.stack((x_test[n,timestep,:,:,0],
-                                x_test[n,timestep,:,:,1],
-                                x_test[n,timestep,:,:,2],
-                                x_test[n,timestep,:,:,3],
-                                x_test[n,timestep,:,:,4]))
-            x_var_pred = torch.autograd.Variable(torch.Tensor(x_input).view(-1,input_channels,dim_y,dim_x),
-                                                 requires_grad=False).to(device)
-            # make prediction
-            last_pred, _ = model(x_var_pred, timestep)
-            # GPU data should be transferred to CPU
-            pred[n,timestep,:,:] = last_pred[0,0,:,:].cpu().data.numpy()
-        # compute the error for each sample
-        hist_pred[n] = MSE(y_test[n,:,:,:,0], pred[n,:,:,:])
-    
     # save prediction as npz file
     np.savez("./baseline_result/%s/%s/predict_%ss_%s.npz"%(model_type,v_a,int(window_size/100),num_s),
              t1=pred, label = y_test[:,:,:,:,0])
