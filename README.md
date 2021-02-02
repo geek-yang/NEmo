@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4494122.svg)](https://doi.org/10.5281/zenodo.4494122)
+
 # NEmo :fish:
 **Neural network for Emotion detection**, in short as **NEmo**, is a python library designed to implement Bayesian deep learning algorisms to emotion database for human emotion detection. It offers an easy construction of two types of deep neural network to incorporate the eletronic signal from sensor and predict human emotion, like valance and arousal.<br/>
 
