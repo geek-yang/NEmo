@@ -2,24 +2,25 @@
 """
 Copyright Netherlands eScience Center
 Function        : Bayesian Convolutional LSTM with Bernoulli approximation variational inference for one step prediction
-Author          : Yang Liu (y.liu@esciencecenter.nl) and Tianyi Zhang
+Author          : Yang Liu (y.liu@esciencecenter.nl)
+Contributor     : Tianyi Zhang (Centrum Wiskunde & Informatica)
 First Built     : 2020.06.19
 Last Update     : 2020.06.19
 Description     : This module serves to perform Bayesian deep learning with variational inference. The variational
-              inference is realized through the implementation of dropout, thus follows the Bernoulli distribution.
-              It is built ontop of Convolutional-Long Short Term Memory networks and designed for emotion recognition
+                  inference is realized through the implementation of dropout, thus follows the Bernoulli distribution.
+                  It is built ontop of Convolutional-Long Short Term Memory networks and designed for emotion recognition
 
-              This method is devised based on the reference:
-              Xingjian, S. H. I., Chen, Z., Wang, H., Yeung, D. Y., Wong, W. K., & Woo, W. C. (2015).
-              Convolutional LSTM network: A machine learning approach for precipitation nowcasting.
-              In Advances in neural information processing systems (pp. 802-810).
+                  This method is devised based on the reference:
+                  Xingjian, S. H. I., Chen, Z., Wang, H., Yeung, D. Y., Wong, W. K., & Woo, W. C. (2015).
+                  Convolutional LSTM network: A machine learning approach for precipitation nowcasting.
+                  In Advances in neural information processing systems (pp. 802-810).
               
-              Gal, Y., & Ghahramani, Z. (2015). Bayesian convolutional neural networks with Bernoulli
-              approximate variational inference. arXiv preprint arXiv:1506.02158.
+                  Gal, Y., & Ghahramani, Z. (2015). Bayesian convolutional neural networks with Bernoulli
+                  approximate variational inference. arXiv preprint arXiv:1506.02158.
 
 Return Values   : time series / array
-Caveat!        : This module get input as a spatial-temporal sequence and make a prediction for only one step!!
-             The so-called many to one prediction.
+Caveat!         : This module get input as a spatial-temporal sequence and make a prediction for only one step!!
+                  The so-called many to one prediction.
 """
 
 import math
