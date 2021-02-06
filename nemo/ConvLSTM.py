@@ -4,6 +4,7 @@ Copyright Netherlands eScience Center
 Function        : Convolutional LSTM for one step prediction
 prediction
 Author          : Yang Liu (y.liu@esciencecenter.nl)
+Contributor     : Tianyi Zhang (Centrum Wiskunde & Informatica)
 First Built     : 2019.05.21
 Last Update     : 2019.06.21
 Contributor     :
