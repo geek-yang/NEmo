@@ -21,6 +21,7 @@ Xingjian, S. H. I., Chen, Z., Wang, H., Yeung, D. Y., Wong, W. K., & Woo, W. C. 
 * `tests` Unit testing, functional testing and integration testing as well as some benchmarking work
 * `examples` Including jupyter notebooks showing how to use each function in NEmo
 * `models` Examples of some trained BBConvLSTM and ConvLSTM neural networks
+* `results` Examples of some post-processed results
 
 ## Dependency :notebook_with_decorative_cover:
 DLACs is tested on python 3.6 and has the following dependencies:<br>
@@ -35,7 +36,7 @@ Clone the repositary and add the repositary folder to your python system path, o
 `python setup.py install`
 
 ## Cite our work :candy:
-DOI will be available soon.
+DOI: 10.5281/zenodo.4494247
 
 ## Contact :email:
 The library is still under development. Comments and feedbacks are very welcomed via issues post.
