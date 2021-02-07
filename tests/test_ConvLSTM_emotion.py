@@ -223,11 +223,11 @@ if __name__=="__main__":
             optimiser.step()
             
         # save the model
-        if t % 50 == 0:
-        # (recommended) save the model parameters only
-        torch.save(model.state_dict(), os.path.join(model_path,'convlstm_emotion_epoch_{}.pkl'.format(t)))
-        # save the entire model
-        #torch.save(model, os.path.join(output_path,'convlstm.pkl'))
+        if t % 20 == 0:
+            # (recommended) save the model parameters only
+            torch.save(model.state_dict(), os.path.join(model_path,'convlstm_emotion_epoch_{}.pkl'.format(t)))
+            # save the entire model
+            #torch.save(model, os.path.join(output_path,'convlstm.pkl'))
         
     # save the model
     # (recommended) save the model parameters only
