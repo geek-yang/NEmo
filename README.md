@@ -29,7 +29,7 @@ DLACs is tested on python 3.6 and has the following dependencies:<br>
 * tensorflow (# for benckmark only)
 * matplotlib
 * scipy
-* torch
+* torch (# main modules of ConvLSTM and BBConvLSTM)
 
 ## Configuration :wrench: :hammer:
 Clone the repositary and add the repositary folder to your python system path, or just go to the repositary folder and run the following command after downloading:<br>
