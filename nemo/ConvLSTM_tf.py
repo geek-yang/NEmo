@@ -2,24 +2,23 @@
 """
 Copyright Netherlands eScience Center
 Function        : Convolutional LSTM for one step prediction
-prediction
-Author         : Yang Liu (y.liu@esciencecenter.nl)
+Author          : Yang Liu (y.liu@esciencecenter.nl)
+Contributor     : Tianyi Zhang (Centrum Wiskunde & Informatica)
 First Built     : 2020.06.05
 Last Update     : 2020.06.05
-Contributor     :
 Description     : This module provides several methods to perform deep learning
-              on climate data. It is designed for weather/climate prediction with
-              spatial-temporal sequence data. The main method here is the 
-              Convolutional-Long Short Term Memory, which is first used by
-              Shi et. al. (2015) for the prediction of precipitation. There paper
-              is available through the link:
-              Convolutional LSTM Network: A Machine Learning Approach for Precipitation Nowcasting
-              https://arxiv.org/abs/1506.04214
+                  on climate data. It is designed for weather/climate prediction with
+                  spatial-temporal sequence data. The main method here is the 
+                  Convolutional-Long Short Term Memory, which is first used by
+                  Shi et. al. (2015) for the prediction of precipitation. There paper
+                  is available through the link:
+                  Convolutional LSTM Network: A Machine Learning Approach for Precipitation Nowcasting
+                  https://arxiv.org/abs/1506.04214
               
-              This module has the same function as ConvLSTM.py, but it is written in tensorflow.
+                  This module has the same function as ConvLSTM.py, but it is written in tensorflow.
 
 Return Values   : time series / array
-Caveat!        : This module get input as a spatial-temporal sequence and make a prediction for only one step!!
+Caveat!         : This module get input as a spatial-temporal sequence and make a prediction for only one step!!
 """
 
 import tensorflow as tf

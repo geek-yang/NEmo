@@ -1,8 +1,9 @@
 # data
 Data_CASE/
 
-# results
-results/
+# checkpoint and cache
+*.ipynb_checkpoints
+*__pycache__
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -4,9 +4,14 @@ Copyright Netherlands eScience Center
 Function        : Functions used by the module
 Author          : Yang Liu (y.liu@esciencecenter.nl)
 First Built     : 2019.07.26
-Last Update     : 2020.03.30
+Last Update     : 2020.07.15
 Contributor     :
-Description     : This scripts provides the basic functions, which will be used by other modules.
+Description     : This scripts provides the basic functions be used by other modules, including early-stop,
+              Evidence Lower Bound (ELBO), error weight and density function of Gaussian distribution.
+              
+              The early stop module is designed with reference to:
+              https://github.com/Bjarten/early-stopping-pytorch
+              https://github.com/pytorch/ignite/blob/master/ignite/handlers/early_stopping.py
 Return Values   : time series / array
 Caveat!         :
 """
@@ -20,8 +25,7 @@ import torch.nn.functional as F
 
 class EarlyStop:
     """
-    Early stop module is widely used to avoid over-fitting. The loss is assigned to be
-    the smaller the better.
+    Early stop module is widely used to avoid over-fitting.
     """ 
     def __init__(self, patience: int, verbose=False, delta=0, path='checkpoint.pt'):
         """
@@ -63,6 +67,7 @@ class EarlyStop:
             print(f'Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ...')
         torch.save(model.state_dict(), self.path)
         self.val_loss_min = val_loss
+        
 
 def lossPeak(y_pred,y_train,y_max=0.8,y_min=0.3,weight_ex=2):
     """
