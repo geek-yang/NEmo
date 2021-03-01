@@ -4,7 +4,7 @@ Function     : Emotion recognition and forecast with BBConvLSTM
 Author       : Yang Liu & Tianyi Zhang
 Contributor  : Tianyi Zhang (Centrum Wiskunde & Informatica)
 First Built  : 2021.02.24
-Last Update  : 2021.02.24
+Last Update  : 2021.03.01
 Library      : Pytorth, Numpy, os, NEmo, matplotlib
 Description  : This script serves to test the prediction skill of deep neural networks in emotion recognition and forecast. The Bayesian convolutional Long Short Time Memory neural network with Bernoulli approximate variational inference is used to deal with this spatial-temporal sequence problem. We use Pytorch as the deep learning framework.
 
@@ -75,7 +75,7 @@ def load_data(window_size, num_s, v_a):
     """
     For long cuts of data and the type is pickle.
     """
-    f = open('./dataset/CASE/data_{}s'.format(int(window_size/100)),'rb')
+    f = open('../Data_CASE/data_{}s'.format(int(window_size/100)),'rb')
     data = pickle.load(f)
     f.close()
     
@@ -113,10 +113,10 @@ def train_model(window_size, dim_x, dim_y,
     model_type = "BBConvLSTM"
     x_train, x_test, y_train, y_test = load_data(window_size, num_s, v_a)
     
-    if not os.path.exists("./baseline_result/%s/%s/"%(model_type,v_a)):
-        os.makedirs("./baseline_result/%s/%s/"%(model_type,v_a))     
-    if not os.path.exists("./model/%s/%s/"%(model_type,v_a)):
-        os.makedirs("./model/%s/%s/"%(model_type,v_a))
+    if not os.path.exists("../baseline_result/%s/%s/"%(model_type,v_a)):
+        os.makedirs("../baseline_result/%s/%s/"%(model_type,v_a))     
+    if not os.path.exists("../model/%s/%s/"%(model_type,v_a)):
+        os.makedirs("../model/%s/%s/"%(model_type,v_a))
 
     # choose the target dimension for reshaping of the signals
     batch_train_size, sample_x_size, channels = x_train.shape
@@ -247,7 +247,7 @@ def train_model(window_size, dim_x, dim_y,
             
     # save the model
     # (recommended) save the model parameters only
-    torch.save(model.state_dict(), os.path.join('./model/%s/%s/'%(model_type,v_a),
+    torch.save(model.state_dict(), os.path.join('../model/%s/%s/'%(model_type,v_a),
                                                 'emotion_%s_%s.pkl'%(model_type,v_a)))
     ########### attention !! no early stopping is implemented here!! ################
     
@@ -260,7 +260,7 @@ def train_model(window_size, dim_x, dim_y,
     plt.xlabel('Iterations')
     plt.ylabel('MSE Error')
     plt.legend()
-    fig00.savefig(os.path.join('./model/%s/%s/'%(model_type,v_a),
+    fig00.savefig(os.path.join('../model/%s/%s/'%(model_type,v_a),
                                'train_mse_error_%s_%s.png'%(model_type,v_a)),dpi=150)
     
     print ("*******************  Loss with time (log)  **********************")
@@ -270,7 +270,7 @@ def train_model(window_size, dim_x, dim_y,
     plt.ylabel('Log mse error')
     plt.legend()
     plt.show()
-    fig01.savefig(os.path.join('./model/%s/%s/'%(model_type,v_a),
+    fig01.savefig(os.path.join('../model/%s/%s/'%(model_type,v_a),
                                'train_log_mse_error_%s_%s.png'%(model_type,v_a)),dpi=150)
     
     #################################################################################
@@ -306,7 +306,7 @@ def train_model(window_size, dim_x, dim_y,
         hist_label[n] = MSE(label_c_test_xy[n,:,:,:], pred_label[n,:,:,:])
     
     # save prediction as npz file
-    np.savez("./baseline_result/%s/%s/predict_%ss_%s.npz"%(model_type,v_a,int(window_size/100),num_s),
+    np.savez("../baseline_result/%s/%s/predict_%ss_%s.npz"%(model_type,v_a,int(window_size/100),num_s),
              t1=pred_label, label = label_c_test_xy)
     # plot the error
     print ("*******************  Loss with time  **********************")
@@ -315,7 +315,7 @@ def train_model(window_size, dim_x, dim_y,
     plt.xlabel('Sample')
     plt.ylabel('MSE Error')
     plt.legend()
-    fig02.savefig(os.path.join("./baseline_result/%s/%s"%(model_type,v_a),
+    fig02.savefig(os.path.join("../baseline_result/%s/%s"%(model_type,v_a),
                                'pred_mse_error_%s_%s.png'%(model_type,v_a)),dpi=150)
     
     #####################################################################################
@@ -328,17 +328,21 @@ def train_model(window_size, dim_x, dim_y,
     
     return mse
 
-def losocv(window_size,dim_x,dim_y,hidden_channels, kernel_size):
+
+#if __name__=="__main__":
+def losocv(window_size, dim_x, dim_y, hidden_channels, kernel_size):
     model_type = "BBConvLSTM"
     print("=====Start training %s, window = %ss, seg = %ss====="%(model_type,int(window_size/100),int(dim_x)))
     mse_v = []
     mse_a = []
     for i in range(30):
-        mse_v.append(train_model(window_size,dim_x,dim_y,hidden_channels, kernel_size,i,0))
-        mse_a.append(train_model(window_size,dim_x,dim_y,hidden_channels, kernel_size,i,1))
-    if not os.path.exists("./baseline_result/%s/"%model_type):
-        os.makedirs("./baseline_result/%s/"%model_type) 
-    np.savez("./baseline_result/%s/results_%s.npz"%(model_type,model_type),
+        mse_v.append(train_model(window_size, dim_x, dim_y,
+                                 hidden_channels, kernel_size, i, 0))
+        mse_a.append(train_model(window_size, dim_x, dim_y,
+                                 hidden_channels, kernel_size, i, 1))
+    if not os.path.exists("../baseline_result/%s/"%model_type):
+        os.makedirs("../baseline_result/%s/"%model_type) 
+    np.savez("../baseline_result/%s/results_%s.npz"%(model_type,model_type),
              mse_v = mse_v,
              mse_a = mse_a,
              mse = [np.mean(mse_v),np.mean(mse_a)])
