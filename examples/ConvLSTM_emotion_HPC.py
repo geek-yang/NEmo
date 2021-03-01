@@ -325,8 +325,8 @@ def train_model(window_size, dim_x, dim_y,
     
     return mse
 
-#def losocv(window_size,dim_x,dim_y,hidden_channels, kernel_size):
-if __name__=="__main__":
+#if __name__=="__main__":
+def losocv(window_size,dim_x,dim_y,hidden_channels, kernel_size):
     model_type = "ConvLSTM"
     print("=====Start training %s, window = %ss, seg = %ss====="%(model_type,int(window_size/100),int(dim_x)))
     mse_v = []
