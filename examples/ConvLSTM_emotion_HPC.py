@@ -43,24 +43,9 @@ import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import cm
 
-################################################################################# 
-#########                 parameters and variables                       ########
-#################################################################################
-# please specify the constants for input data
-window_size = 2000 # down-sampling constant
-seq = 20
-#v_a = 0 # valance = 0, arousal = 1
-# leave-one-out training and testing
-#num_s = 2
-#-------------------------------------------
-# please specify the hyperparameters for network
-dim_x = 5
-dim_y = 5
-input_channels = 4
-hidden_channels = [3, 2, 1] # number of channels & hidden layers, the channels of last layer is the channels of output, too
-kernel_size = 1
-#################################################################################
-
+##################################################################
+#########                 functions                       ########
+##################################################################
 
 def MSE(x, y):
     """
@@ -112,10 +97,10 @@ def train_model(window_size, dim_x, dim_y,
     model_type = "ConvLSTM"
     x_train, x_test, y_train, y_test = load_data(window_size, num_s, v_a)
     
-    if not os.path.exists("./baseline_result/%s/%s/"%(model_type,v_a)):
-        os.makedirs("./baseline_result/%s/%s/"%(model_type,v_a))     
-    if not os.path.exists("./model/%s/%s/"%(model_type,v_a)):
-        os.makedirs("./model/%s/%s/"%(model_type,v_a))
+    if not os.path.exists("../baseline_result/%s/%s/"%(model_type,v_a)):
+        os.makedirs("../baseline_result/%s/%s/"%(model_type,v_a))     
+    if not os.path.exists("../model/%s/%s/"%(model_type,v_a)):
+        os.makedirs("../model/%s/%s/"%(model_type,v_a))
 
     # choose the target dimension for reshaping of the signals
     batch_train_size, sample_x_size, channels = x_train.shape
@@ -140,7 +125,7 @@ def train_model(window_size, dim_x, dim_y,
     batch_train_size, sample_x_size, channels = x_train.shape
     # here we input a sequence and predict the next step only
     learning_rate = 0.001
-    num_epochs = 30
+    num_epochs = 50
     print (torch.__version__)
     # check if CUDA is available
     use_cuda = torch.cuda.is_available()
@@ -167,14 +152,14 @@ def train_model(window_size, dim_x, dim_y,
     print ('The model learns by verifying the output at each timestep.')
     # initialize our model
     model = nemo.ConvLSTM.ConvLSTM(input_channels, hidden_channels, kernel_size).to(device)
-    loss_fn = torch.nn.MSELoss(size_average=True)
+    loss_fn = torch.nn.MSELoss(reduction = "mean")
     # stochastic gradient descent
     #optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9)
     # Adam optimizer
     optimiser = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    print(model)
-    print(loss_fn)
-    print(optimiser)        
+    #print(model)
+    #print(loss_fn)
+    #print(optimiser)        
     
     print('##############################################################')
     print('##################  start training loop  #####################')
@@ -277,7 +262,7 @@ def train_model(window_size, dim_x, dim_y,
     print('###################  start prediction loop ###################')
     print('##############################################################')
     # forecast array
-    pred_label = np.zeros((batch_test_size, series_y_len, y_dim, x_dim),dtype=float)
+    pred_label = np.zeros((batch_test_size, series_y_len, dim_y, dim_x),dtype=float)
     # calculate loss for each sample
     hist_label = np.zeros(batch_test_size)
     for n in range(batch_test_size):
@@ -300,15 +285,15 @@ def train_model(window_size, dim_x, dim_y,
                 pred_label[n,crit_step_pred,:,:] = last_pred[0,0,:,:].cpu().data.numpy()
                 crit_step_pred = crit_step_pred + 1 # move forward
         # compute the error for each sample
-        hist_label[n] = MSE(label_c_test_xy[n,:,:,:], pred_label[n,:,:,:])
+        hist_label[n] = MSE(label_c_test_xy[n,:,:,:,0], pred_label[n,:,:,:])
     
     # save prediction as npz file
-    np.savez("../baseline_result/%s/%s/predict_%ss_%s.npz"%(model_type,v_a,int(window_size/100),num_s),
+    np.savez("../baseline_result/%s/%s/predict_%s_%ss_%s.npz"%(model_type,v_a,model_type,int(window_size/100),num_s),
              t1=pred_label, label = label_c_test_xy)
     # plot the error
     print ("*******************  Loss with time  **********************")
     fig02 = plt.figure()
-    plt.plot(hist_pred, 'r', label="Testing loss")
+    plt.plot(hist_label, 'r', label="Testing loss")
     plt.xlabel('Sample')
     plt.ylabel('MSE Error')
     plt.legend()
@@ -319,19 +304,19 @@ def train_model(window_size, dim_x, dim_y,
     ########         visualization of prediction and implement metrics           ########
     #####################################################################################
     # compute mse
-    mse = MSE(label_c_test_xy, pred_label)
+    mse = MSE(label_c_test_xy[:,:,:,:,0], pred_label)
     print(mse)
     print("=====Finished %s======= mse = %.4f====="%(num_s,mse))
     
     return mse
 
-#if __name__=="__main__":
 def losocv(window_size,dim_x,dim_y,hidden_channels, kernel_size):
+    # leave one subject out cross validation
     model_type = "ConvLSTM"
     print("=====Start training %s, window = %ss, seg = %ss====="%(model_type,int(window_size/100),int(dim_x)))
     mse_v = []
     mse_a = []
-    for i in range(30):
+    for i in np.arange(1,31):
         mse_v.append(train_model(window_size,dim_x,dim_y,hidden_channels, kernel_size,i,0))
         mse_a.append(train_model(window_size,dim_x,dim_y,hidden_channels, kernel_size,i,1))
     if not os.path.exists("../baseline_result/%s/"%model_type):
@@ -342,3 +327,30 @@ def losocv(window_size,dim_x,dim_y,hidden_channels, kernel_size):
              mse = [np.mean(mse_v),np.mean(mse_a)])
     print("=====Finished training %s, window = %ss, seg = %ss=========="%(model_type,int(window_size/100),int(dim_x)))
     print("====== mse_v = %.4f, mse_a = %.4f ====="%(np.mean(mse_v),np.mean(mse_a)))
+    
+if __name__=="__main__":
+    ################################################################################# 
+    #########                 parameters and variables                       ########
+    #################################################################################
+    # please specify the constants for input data
+    window_size = 2000 # down-sampling constant
+    seq = 20
+    #v_a = 0 # valance = 0, arousal = 1
+    # leave-one-out training and testing
+    #num_s = 2
+    #-------------------------------------------
+    # please specify the hyperparameters for network
+    dim_x = 5
+    dim_y = 5
+    input_channels = 4
+    hidden_channels = [3, 2, 1] # number of channels & hidden layers, the channels of last layer is the channels of output, too
+    kernel_size = 1
+    #################################################################################
+    # test module
+    print("run 1st test")
+    train_model(window_size, dim_x, dim_y, hidden_channels, kernel_size, 1, 0)
+    print("1st test complete")
+    # test module
+    print("run 2nd test")
+    losocv(window_size, dim_x, dim_y, hidden_channels, kernel_size)
+    print("2nd test complete")
